@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Todo List — PABWE</title>
+
+  <!-- Bootstrap (for quick, aesthetic UI) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- SortableJS (drag & drop) -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
+  <style>
+    :root{
+      --bg: #0f172a;
+      --card: #0b1220;
+      --accent: #7c3aed;
+      --muted: #9aa4b2;
+    }
+    body {
+      background: linear-gradient(180deg,#071126 0%, #071b2b 60%);
+      color: #e6eef8;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      padding: 36px;
+    }
+    .app {
+      max-width: 920px;
+      margin: 0 auto;
+    }
+    .brand {
+      display:flex; gap:12px; align-items:center;
+    }
+    .brand .logo {
+      width:56px; height:56px; border-radius:12px;
+      background: linear-gradient(135deg,#5eead4,#60a5fa);
+      display:flex; align-items:center; justify-content:center; color:#07203a;
+      font-weight:700; box-shadow:0 6px 20px rgba(2,6,23,0.6);
+    }
+    .card-custom {
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 8px 30px rgba(2,6,23,0.6);
+    }
+    .controls { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    .filter-btn.active { border-color: var(--accent); color: var(--accent); }
+    #todoList { list-style: none; padding:0; margin:0; display:block; }
+    #todoList li {
+      background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255,255,255,0.03);
+      padding: 10px 12px;
+      margin-bottom:10px;
+      border-radius:10px;
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      cursor: grab;
+    }
+    #todoList li.dragging { opacity:0.6; transform: scale(0.995); }
+    .todo-left { display:flex; gap:12px; align-items:center; min-width:0; }
+    .todo-title { word-break: break-word; color: #e6eef8; }
+    .todo-title.completed { text-decoration: line-through; color: #8b98a6; }
+    .muted { color: var(--muted); font-size: .9rem; }
+    .tiny { font-size:.85rem; }
+    .search-input { min-width:220px; }
+    .btn-icon { width:36px; height:36px; display:inline-flex; align-items:center; justify-content:center; }
+    .note { font-size:0.85rem; color:#aab6c9; }
+    footer { margin-top:18px; color:#8f9fb2; text-align:center; font-size:0.85rem; }
+    @media (max-width:640px){ .controls {flex-direction:column; align-items:stretch;} .search-input{width:100%} }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="brand mb-3">
+      <div class="logo">TD</div>
+      <div>
+        <h2 class="mb-0">Todo List — PABWE</h2>
+        <div class="muted tiny">Fitur: filter, search (with filter), edit, unique title validation, drag & drop (persist)</div>
+      </div>
+    </div>
+
+    <div class="card-custom mb-3">
+      <form id="formData" class="row g-2 align-items-center">
+        <div class="col-auto" style="flex:1">
+          <input id="todoInput" name="todo" class="form-control form-control-lg" placeholder="Tambah tugas baru... (contoh: Belajar JS)" autocomplete="off"/>
+        </div>
+        <div class="col-auto">
+          <button id="submitBtn" class="btn btn-primary btn-lg">Tambah</button>
+        </div>
+        <div class="col-12">
+          <div class="d-flex controls">
+            <div class="btn-group" role="group" aria-label="filter">
+              <button type="button" data-filter="all" class="btn btn-sm btn-outline-light filter-btn active">Semua</button>
+              <button type="button" data-filter="active" class="btn btn-sm btn-outline-light filter-btn">Belum Selesai</button>
+              <button type="button" data-filter="completed" class="btn btn-sm btn-outline-light filter-btn">Selesai</button>
+            </div>
+
+            <div class="ms-auto d-flex align-items-center gap-2">
+              <input id="searchInput" class="form-control search-input form-control-sm" placeholder="Cari... (tetap berdasarkan filter aktif)" />
+              <button id="clearBtn" type="button" title="Hapus semua todo" class="btn btn-sm btn-danger" style="white-space:nowrap">Hapus Semua</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="card-custom">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div><strong>Daftar Tugas</strong> <span id="countBadge" class="muted tiny"></span></div>
+        <div class="note">Seret untuk mengurutkan — urutan akan tersimpan.</div>
+      </div>
+      <ul id="todoList" class="mb-2"></ul>
+      <div id="emptyNote" class="muted tiny">Belum ada todo. Tambahkan tugas di atas.</div>
+    </div>
+
+    <footer class="mt-3">
+      <a class="muted">Aisah Sipahutar</a> •
+      <a  class="muted">11S23018</a>
+    </footer>
+  </div>
+
+  <!-- Pindahkan JavaScript ke file terpisah -->
+  <script src="index.js"></script>
+</body>
+</html>
